@@ -1,5 +1,6 @@
 const { Model, DataTypes } = require("sequelize");
 const sequelize = require("../config/connection");
+const department = require ('./department');
 
 class roles extends Model {}
 
@@ -30,10 +31,10 @@ roles.init(
   {
     sequelize,
     modelName: "roles",
-    freezeTableName: true,
-    underscored: true,
-    timestamps: false,
+    timestamps: false, // Exclude createdAt and updatedAt fields
   }
 );
+
+roles.belongsTo(department, { foreignKey: 'department_id'});
 
 module.exports = roles;
