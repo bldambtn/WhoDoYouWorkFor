@@ -19,9 +19,7 @@ department.init(
   {
     sequelize,
     modelName: "department",
-    freezeTableName: true,
-    underscored: true,
-    timestamps: false,
+    timestamps: false, // Exclude createdAt and updatedAt fields
   }
 );
 

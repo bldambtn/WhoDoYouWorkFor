@@ -20,24 +20,88 @@ sequelize
     process.exit(1); // Exit process if connection fails
   });
 
-const viewAllEmployees = async () => {
+const viewAllEmployees = async () => {};
 
-};
+const addEmployee = async () => {};
 
-const addEmployee = async () => {
-
-};
-
-const updateEmployeeRole = async () => {
-
-};
+const updateEmployeeRole = async () => {};
 
 const viewAllRoles = async () => {
+  try {
+    // Retrieve all roles with associated department information
+    const rolesList = await roles.findAll({
+      include: {
+        model: department,
+        attributes: ["name"], // Include department name only
+      },
+      attributes: ["id", "title", "salary", "department_id"], // Select only existing columns
+    });
 
+    // Format and display the roles data in a table
+    console.table(
+      rolesList.map((role) => ({
+        Role_ID: role.id,
+        Job_Title: role.title,
+        Department: role.department
+          ? role.department.name
+          : "Unknown Department", // Check if department exists
+        Salary: role.salary,
+      }))
+    );
+  } catch (error) {
+    console.error("Error retrieving roles:", error);
+  }
 };
 
 const addRole = async () => {
+  try {
+    // Retrieve all departments from the database
+    const departmentsList = await department.findAll();
 
+    // Map departments to choices for inquirer prompt
+    const departmentChoices = departmentsList.map((dept) => ({
+      name: dept.name,
+      value: dept.id,
+    }));
+
+    // Prompt user for role details
+    const { roleName, roleSalary, departmentId } = await inquirer.prompt([
+      {
+        type: "input",
+        name: "roleName",
+        message: "Enter the name of the role:",
+        validate: (input) => (input ? true : "Role name cannot be empty"),
+      },
+      {
+        type: "input",
+        name: "roleSalary",
+        message: "Enter the salary for the role:",
+        validate: (input) => {
+          const salary = parseFloat(input);
+          return isNaN(salary) || salary <= 0
+            ? "Salary must be a positive number"
+            : true;
+        },
+      },
+      {
+        type: "list",
+        name: "departmentId",
+        message: "Select the department for this role:",
+        choices: departmentChoices,
+      },
+    ]);
+
+    // Create a new role in the database
+    await roles.create({
+      title: roleName,
+      salary: parseFloat(roleSalary),
+      department_id: departmentId,
+    });
+
+    console.log(`Role '${roleName}' added successfully.`);
+  } catch (error) {
+    console.error("Error adding role:", error);
+  }
 };
 
 const viewAllDepartments = async () => {
